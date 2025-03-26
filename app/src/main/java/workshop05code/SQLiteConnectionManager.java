@@ -126,11 +126,14 @@ public class SQLiteConnectionManager {
      * @param word the word to store
      */
     public void addValidWord(int id, String word) {
-
-        String sql = "INSERT INTO validWords(id,word) VALUES('" + id + "','" + word + "')";
+        // Change concatenated string to prepared statement (parameterised query) with a ? placeholder
+        String sql = "INSERT INTO validWords(id,word) VALUES(?,?)";
 
         try (Connection conn = DriverManager.getConnection(databaseURL);
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, id); //Add id value (int) to the first ? parameter
+                pstmt.setString(2, word); //Add word value (string) to the second ? parameter
+
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -145,7 +148,7 @@ public class SQLiteConnectionManager {
      * @return true if guess exists in the database, false otherwise
      */
     public boolean isValidWord(String guess) {
-        // Change concatenated string to a prepared statement with a ? placeholder
+        // Change concatenated string to a prepared statement (parameterised query) with a ? placeholder
         String sql = "SELECT count(id) as total FROM validWords WHERE word like ?"; 
 
         try (Connection conn = DriverManager.getConnection(databaseURL);
