@@ -34,7 +34,7 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        logger.log(Level.INFO,"Word guesser application runs");
+        logger.log(Level.INFO,"Wordle application runs");
         SQLiteConnectionManager wordleDatabaseConnection = new SQLiteConnectionManager("words.db");
 
         wordleDatabaseConnection.createNewDatabase("words.db");
@@ -58,32 +58,35 @@ public class App {
             int i = 1;
             while ((line = br.readLine()) != null) {
                 if (line.matches("[a-z]{4}")) {
-                    System.out.println(line);
+                    logger.log(Level.INFO, "Added valid word: {0}", line); // log valid added words
                     wordleDatabaseConnection.addValidWord(i, line);
                     i++;
                 }else {
-                    System.out.println("Ignored unnaceptable input");
+                    logger.log(Level.SEVERE, "Invalid user input ignored: {0}", line); // log invalid words
                 }
             }
 
         } catch (IOException e) {
             System.out.println("Not able to load . Sorry!");
-            System.out.println(e.getMessage());
+            logger.log(Level.SEVERE, "Failed to load file.", e); // log file loading failure
             return;
         }
 
         // let's get them to enter a word
 
         try (Scanner scanner = new Scanner(System.in)) {
-            // Loop to continuously propmt user guesses
-            while (true) {
-                System.out.print("Enter a 4 letter word for a guess or q to quit: ");
-                String guess = scanner.nextLine(); // read user input
+            String guess = "";
 
-                if (guess.equals("q")){ 
-                    break; // break/exit loop if user input = q
-                }else if(!guess.matches("[a-z]{4}")){ //check if user input doesnt contain only 4 lowercase letters
+            // Loop to continuously propmt user guesses
+            while (!guess.equals("q")) {
+                System.out.print("Enter a 4 letter word for a guess or q to quit: ");
+                guess = scanner.nextLine(); // read user input
+
+               // if (guess.equals("q")){ 
+                //    break; // break loop if user input = q
+                if(!guess.matches("[a-z]{4}")){ //check if user input doesnt contain only 4 lowercase letters
                     System.out.println("'" + guess + "' is an invalid input. Please only use 4 lowercase letters\n");
+                    logger.log(Level.WARNING, "Invalid user input: {0}", guess); // Log unexpected user input (maybe use info???)
                     continue; // skip current loop iteration
                 }
 
@@ -97,7 +100,7 @@ public class App {
             }
 
         } catch (NoSuchElementException | IllegalStateException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Unexpected error in input.", e); 
         }
 
     }
