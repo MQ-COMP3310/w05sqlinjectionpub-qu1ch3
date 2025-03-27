@@ -34,6 +34,7 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        logger.log(Level.INFO,"Word guesser application runs");
         SQLiteConnectionManager wordleDatabaseConnection = new SQLiteConnectionManager("words.db");
 
         wordleDatabaseConnection.createNewDatabase("words.db");
@@ -56,9 +57,13 @@ public class App {
             String line;
             int i = 1;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                wordleDatabaseConnection.addValidWord(i, line);
-                i++;
+                if (line.matches("[a-z]{4}")) {
+                    System.out.println(line);
+                    wordleDatabaseConnection.addValidWord(i, line);
+                    i++;
+                }else {
+                    System.out.println("Ignored unnaceptable input");
+                }
             }
 
         } catch (IOException e) {
@@ -70,10 +75,18 @@ public class App {
         // let's get them to enter a word
 
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Enter a 4 letter word for a guess or q to quit: ");
-            String guess = scanner.nextLine();
+            // Loop to continuously propmt user guesses
+            while (true) {
+                System.out.print("Enter a 4 letter word for a guess or q to quit: ");
+                String guess = scanner.nextLine(); // read user input
 
-            while (!guess.equals("q")) {
+                if (guess.equals("q")){ 
+                    break; // break/exit loop if user input = q
+                }else if(!guess.matches("[a-z]{4}")){ //check if user input doesnt contain only 4 lowercase letters
+                    System.out.println("'" + guess + "' is an invalid input. Please only use 4 lowercase letters\n");
+                    continue; // skip current loop iteration
+                }
+
                 System.out.println("You've guessed '" + guess+"'.");
 
                 if (wordleDatabaseConnection.isValidWord(guess)) { 
@@ -81,10 +94,8 @@ public class App {
                 }else{
                     System.out.println("Sorry. This word is NOT in the the list.\n");
                 }
-
-                System.out.print("Enter a 4 letter word for a guess or q to quit: " );
-                guess = scanner.nextLine();
             }
+
         } catch (NoSuchElementException | IllegalStateException e) {
             e.printStackTrace();
         }
